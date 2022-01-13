@@ -1,0 +1,2 @@
+# nife
+Misc javascript utilities
