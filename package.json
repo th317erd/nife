@@ -1,0 +1,29 @@
+{
+  "name": "nife",
+  "version": "1.0.0",
+  "description": "Misc javascript utilities",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/jasmine"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/th317erd/nife.git"
+  },
+  "keywords": [
+    "utility",
+    "javascript",
+    "node",
+    "extend",
+    "utils"
+  ],
+  "author": "Wyatt Greenway",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/th317erd/nife/issues"
+  },
+  "homepage": "https://github.com/th317erd/nife#readme",
+  "devDependencies": {
+    "jasmine": "^4.0.2"
+  }
+}
