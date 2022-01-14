@@ -178,6 +178,32 @@ describe("Utils", function() {
     expect(Nife.capitalize('derp THANG', true)).toBe('Derp THANG');
   });
 
+  it('should be able to uncapitalize strings', function() {
+    expect(Nife.uncapitalize('Something')).toBe('something');
+    expect(Nife.uncapitalize('SOMETHING')).toBe('sOMETHING');
+  });
+
+  it('should be able to convert camel-case to snake-case', function() {
+    expect(Nife.camelCaseToSnakeCase(null)).toBe(null);
+    expect(Nife.camelCaseToSnakeCase(undefined)).toBe(undefined);
+    expect(Nife.camelCaseToSnakeCase('testCamelCase')).toEqual('test_camel_case');
+    expect(Nife.camelCaseToSnakeCase('TestCamelCase')).toEqual('test_camel_case');
+    expect(Nife.camelCaseToSnakeCase('webhookURL')).toEqual('webhook_url');
+    expect(Nife.camelCaseToSnakeCase('webhookURLBase')).toEqual('webhook_url_base');
+  });
+
+  it('should be able to convert snake-case to camel-case', function() {
+    expect(Nife.snakeCaseToCamelCase(null)).toBe(null);
+    expect(Nife.snakeCaseToCamelCase(undefined)).toBe(undefined);
+    expect(Nife.snakeCaseToCamelCase('test_snake_case')).toEqual('testSnakeCase');
+    expect(Nife.snakeCaseToCamelCase('test_snake_case', true)).toEqual('TestSnakeCase');
+    expect(Nife.snakeCaseToCamelCase('Test_snake_case', false)).toEqual('testSnakeCase');
+    expect(Nife.snakeCaseToCamelCase('_test')).toEqual('Test');
+    expect(Nife.snakeCaseToCamelCase('_test_case')).toEqual('TestCase');
+    expect(Nife.snakeCaseToCamelCase('_test_case_')).toEqual('TestCase');
+    expect(Nife.snakeCaseToCamelCase('_test_case_', false)).toEqual('testCase');
+  });
+
   it('should be able to create a resolvable (success)', function(done) {
     var promise = Nife.createResolvable();
 

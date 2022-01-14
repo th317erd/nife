@@ -375,6 +375,65 @@ function capitalize(_tempStr, allWords) {
   });
 }
 
+function uncapitalize(_tempStr) {
+  var tempStr = _tempStr;
+  if (isEmpty(tempStr))
+    return tempStr;
+
+  return tempStr.replace(/^./, (m) => m.toLocaleLowerCase());
+}
+
+function camelCaseToSnakeCase(str) {
+  if (!str)
+    return str;
+
+  var parts       = str.replace(/([A-Z])/g, '@@@$1@@@').split('@@@').filter(Boolean);
+  var finalParts  = [];
+
+  for (var i = 0, il = parts.length; i < il;) {
+    var part        = parts[i];
+    var partPlusOne = parts[i + 1];
+    var lastPart    = lastValue(finalParts, '');
+
+    if (part.match(/^[A-Z]/)) {
+      if (partPlusOne && partPlusOne.match(/^[^A-Z]/)) {
+        finalParts.push((part + partPlusOne));
+        i += 2;
+        continue;
+      } else if (lastPart.match(/^[^A-Z]/)) {
+        finalParts.push(part);
+      } else {
+        if (!finalParts.length)
+          finalParts.push('');
+
+        finalParts[finalParts.length - 1] = (lastPart + part);
+      }
+    } else {
+      finalParts.push(part);
+    }
+
+    i++;
+  }
+
+  return finalParts.join('_').toLowerCase();
+}
+
+function snakeCaseToCamelCase(_str, capitalizeFirst) {
+  var str = _str;
+  if (!str)
+    return str;
+
+  str = str.replace(/_(.)/g, (m, p) => p.toLocaleUpperCase()).replace(/_+$/g, '');
+  if (capitalizeFirst != null) {
+    if (!capitalizeFirst)
+      str = uncapitalize(str);
+    else
+      str = capitalize(str);
+  }
+
+  return str;
+}
+
 function createResolvable() {
   var status = 'pending';
   var resolve;
@@ -419,6 +478,9 @@ module.exports = {
   isEmpty,
   isNotEmpty,
   capitalize,
+  uncapitalize,
+  camelCaseToSnakeCase,
+  snakeCaseToCamelCase,
   firstValue,
   lastValue,
   createResolvable,
