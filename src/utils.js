@@ -461,6 +461,178 @@ function createResolvable() {
   return promise;
 }
 
+function splitBy(str, _patterns, simple) {
+  var patterns = _patterns;
+  if (!patterns)
+    return [ str ];
+
+  if (!(patterns instanceof Array))
+    patterns = [ patterns ];
+
+  var hasNamedPattern = false;
+
+  const cloneRegExp = (regexp) => {
+    // Clone regexp and ensure it has the global flag set
+    var flags;
+    regexp = regexp.toString().substring(1).replace(/\/(\w*)$/, (m, f) => {
+      flags = (flags || '').replace(/g/gi, '');
+      return '';
+    });
+
+    return new RegExp(regexp, flags + 'g');
+  };
+
+  const collectPatterns = (patterns) => {
+    var finalPatterns = [];
+
+    for (var i = 0, il = patterns.length; i < il; i++) {
+      var pattern = patterns[i];
+      if (!pattern)
+        continue;
+
+      var name      = null;
+      var process   = null;
+      var condition = null;
+
+      if (pattern.constructor === Object.prototype.constructor && pattern.pattern) {
+        if (pattern.name) {
+          hasNamedPattern = true;
+          name = ('' + pattern.name);
+        } else {
+          name = ('' + i);
+        }
+
+        condition = pattern.condition;
+        process   = pattern.process;
+        pattern   = pattern.pattern;
+      }
+
+      if (!name)
+        name = ('' + i);
+
+      if (pattern instanceof RegExp) {
+        pattern = cloneRegExp(pattern);
+      } else if (typeof pattern === 'string' || pattern instanceof String) {
+        pattern = ('' + pattern);
+      }
+
+      if (!pattern)
+        continue;
+
+      finalPatterns.push({ name, pattern, index: i, process, condition });
+    }
+
+    return finalPatterns;
+  };
+
+  const matchPattern = (str, pattern, index) => {
+    var match;
+    if (pattern instanceof RegExp) {
+      pattern.lastIndex = index;
+      match = pattern.exec(str);
+      if (!match)
+        return;
+
+      return { match: match[0], offset: pattern.lastIndex - match[0].length };
+    } else {
+      var offset = str.indexOf(pattern, index);
+      if (offset < 0)
+        return;
+
+      return { match: str.substring(offset, offset + pattern.length), offset };
+    }
+  };
+
+  const findNextMatch = (str, index) => {
+    for (var i = 0, il = patterns.length; i < il; i++) {
+      var thisPattern = patterns[i];
+      var pattern     = thisPattern.pattern;
+      var condition   = thisPattern.condition;
+      var match       = matchPattern(str, pattern, index);
+
+      if (typeof condition === 'function' && !condition({ parts: finalParts, pattern: thisPattern, chunk: match }))
+        continue;
+
+      if (match)
+        return { match, pattern: thisPattern };
+    }
+  }
+
+  patterns = collectPatterns(patterns);
+
+  var finalParts = [];
+  var lastOffset = 0;
+  var result;
+  var found;
+  var match;
+  var offset;
+  var pattern;
+  var part;
+
+  while (result = findNextMatch(str, lastOffset)) {
+    found     = result.match;
+    offset    = found.offset;
+    match     = found.match;
+    pattern   = result.pattern;
+
+    if (match.length) {
+      if (lastOffset < offset) {
+        part = str.substring(lastOffset, offset);
+        finalParts.push({ source: str, part, processed: part, start: lastOffset, end: offset, name: '_chunk' });
+      }
+
+      var context = {
+        source: str,
+        part:   match,
+        start:  lastOffset,
+        end:    offset,
+        name:   pattern.name,
+      };
+
+      finalParts.push(context);
+
+      context.processed = (typeof pattern.process === 'function') ? pattern.process(match, context) : match;
+
+      lastOffset = offset + match.length;
+    } else {
+      lastOffset++;
+    }
+  }
+
+  if (lastOffset < str.length) {
+    var part = str.substring(lastOffset);
+    finalParts.push({ source: str, part, processed: part, start: lastOffset, end: str.length, name: '_tail' });
+  }
+
+  if (simple === true || !(_patterns instanceof Array))
+    return finalParts.map((finalPart) => finalPart.part);
+
+  if (hasNamedPattern) {
+    finalParts = finalParts.reduce((obj, part) => {
+      var name = part.name;
+
+      if (obj.hasOwnProperty(name)) {
+        if (!(obj[name] instanceof Array))
+          obj[name] = [ obj[name], part.processed ];
+        else
+          obj[name].push(part.processed);
+      } else {
+        obj[name] = part.processed;
+      }
+
+      return obj;
+    }, {});
+  }
+
+  return finalParts;
+}
+
+function regexpEscape(str) {
+  if (!str)
+    return str;
+  return str.replace(/[-[\]{}()*+!<=:?./\\^$|#\s,]/g, '\\$&');
+}
+
 const get           = prop.bind(this, 'get');
 const set           = prop.bind(this, 'set');
 const remove        = prop.bind(this, 'remove');
@@ -484,6 +656,8 @@ module.exports = {
   firstValue,
   lastValue,
   createResolvable,
+  splitBy,
+  regexpEscape,
   get,
   set,
   remove,

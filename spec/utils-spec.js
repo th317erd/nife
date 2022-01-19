@@ -22,6 +22,18 @@ describe("Utils", function() {
     };
   });
 
+  it('should be able to escape regular expressions', function() {
+    expect(Nife.regexpEscape('[.*]{}^$')).toEqual('\\[\\.\\*\\]\\{\\}\\^\\$');
+  });
+
+  it('should be able to split by parts', function() {
+    var parts = Nife.splitBy('!$#@ derp word 1234 stuff ....', /\w+/);
+    expect(parts).toEqual([ "!$#@ ","derp"," ","word"," ","1234"," ","stuff"," ...." ]);
+
+    var parts = Nife.splitBy('!$#@ derp word 1234 stuff ....', [ 'er', 'or', 'uf' ], true);
+    expect(parts).toEqual([ "!$#@ d","er","p w","or","d 1234 st","uf","f ...." ]);
+  });
+
   it('should be able to properly identify types', function() {
     class TestClass {};
 

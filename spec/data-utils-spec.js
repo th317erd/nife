@@ -1,6 +1,123 @@
 const Nife = require('../src');
 
 describe("DataUtils", function() {
+  describe('coerceValue', function() {
+    it('should be able to coerce to boolean (without type)', function() {
+      expect(Nife.coerceValue(undefined)).toBe(undefined);
+      expect(Nife.coerceValue(null)).toBe(null);
+      expect(Nife.coerceValue(true)).toBe(true);
+      expect(Nife.coerceValue(false)).toBe(false);
+      expect(Nife.coerceValue('True')).toBe(true);
+      expect(Nife.coerceValue('true')).toBe(true);
+      expect(Nife.coerceValue('"TRUE"')).toBe(true);
+      expect(Nife.coerceValue('"true"')).toBe(true);
+      expect(Nife.coerceValue("'true'")).toBe(true);
+      expect(Nife.coerceValue('false')).toBe(false);
+      expect(Nife.coerceValue('False')).toBe(false);
+      expect(Nife.coerceValue('"false"')).toBe(false);
+      expect(Nife.coerceValue('"FALSE"')).toBe(false);
+      expect(Nife.coerceValue("'false'")).toBe(false);
+    });
+
+    it('should be able to coerce to boolean (with type)', function() {
+      expect(Nife.coerceValue(undefined, 'boolean')).toBe(false);
+      expect(Nife.coerceValue(null, 'boolean')).toBe(false);
+      expect(Nife.coerceValue(true, 'boolean')).toBe(true);
+      expect(Nife.coerceValue(false, 'boolean')).toBe(false);
+      expect(Nife.coerceValue(0, 'boolean')).toBe(false);
+      expect(Nife.coerceValue(1, 'boolean')).toBe(true);
+      expect(Nife.coerceValue(-1, 'boolean')).toBe(true);
+      expect(Nife.coerceValue(NaN, 'boolean')).toBe(false);
+      expect(Nife.coerceValue(Infinity, 'boolean')).toBe(true);
+      expect(Nife.coerceValue(BigInt(0), 'boolean')).toBe(false);
+      expect(Nife.coerceValue(BigInt(1), 'boolean')).toBe(true);
+      expect(Nife.coerceValue(BigInt(-1), 'boolean')).toBe(true);
+      expect(Nife.coerceValue('True', 'boolean')).toBe(true);
+      expect(Nife.coerceValue('true', 'boolean')).toBe(true);
+      expect(Nife.coerceValue('"TRUE"', 'boolean')).toBe(true);
+      expect(Nife.coerceValue('"true"', 'boolean')).toBe(true);
+      expect(Nife.coerceValue("'true'", 'boolean')).toBe(true);
+      expect(Nife.coerceValue('false', 'boolean')).toBe(false);
+      expect(Nife.coerceValue('False', 'boolean')).toBe(false);
+      expect(Nife.coerceValue('"false"', 'boolean')).toBe(false);
+      expect(Nife.coerceValue('"FALSE"', 'boolean')).toBe(false);
+      expect(Nife.coerceValue("'false'", 'boolean')).toBe(false);
+    });
+
+    it('should be able to coerce to number (without type)', function() {
+      expect(Nife.coerceValue(undefined)).toBe(undefined);
+      expect(Nife.coerceValue(null)).toBe(null);
+      expect(Nife.coerceValue(0)).toBe(0);
+      expect(Nife.coerceValue(10)).toBe(10);
+      expect(Nife.coerceValue('0')).toBe(0);
+      expect(Nife.coerceValue('5')).toBe(5);
+      expect(Nife.coerceValue('15.5')).toBe(15.5);
+      expect(Nife.coerceValue("'15.5'")).toBe('15.5');
+      expect(Nife.coerceValue('"10.52:234"')).toBe('10.52:234');
+    });
+
+    it('should be able to coerce to number (with type)', function() {
+      expect(Nife.coerceValue(undefined, 'integer')).toBe(0);
+      expect(Nife.coerceValue(null, 'integer')).toBe(0);
+      expect(Nife.coerceValue(0, 'integer')).toBe(0);
+      expect(Nife.coerceValue(10, 'integer')).toBe(10);
+      expect(Nife.coerceValue(10.4, 'integer')).toBe(10);
+      expect(Nife.coerceValue(10.6, 'integer')).toBe(11);
+      expect(Nife.coerceValue('0', 'integer')).toBe(0);
+      expect(Nife.coerceValue('5', 'integer')).toBe(5);
+      expect(Nife.coerceValue('15.5', 'integer')).toBe(16);
+      expect(Nife.coerceValue("'15.4'", 'integer')).toBe(15);
+      expect(Nife.coerceValue('"10.52:234"', 'integer')).toBe(11);
+
+      expect(Nife.coerceValue('10.4', 'number')).toBe(10.4);
+      expect(Nife.coerceValue('10.6', 'number')).toBe(10.6);
+      expect(Nife.coerceValue('"10.6"', 'number')).toBe(10.6);
+      expect(Nife.coerceValue("'10.6'", 'number')).toBe(10.6);
+      expect(Nife.coerceValue("'10.6:234.3'", 'number')).toBe(10.6);
+      expect(Nife.coerceValue("1e-7", 'number')).toEqual(1/10000000);
+
+      expect(Nife.coerceValue('0', 'bigint')).toEqual(BigInt(0));
+      expect(Nife.coerceValue('1', 'bigint')).toEqual(BigInt(1));
+      expect(Nife.coerceValue('1.1', 'bigint')).toEqual(BigInt(1));
+      expect(Nife.coerceValue('1.5', 'bigint')).toEqual(BigInt(2));
+      expect(Nife.coerceValue('"1.5"', 'bigint')).toEqual(BigInt(2));
+      expect(Nife.coerceValue('"1.5:5.6"', 'bigint')).toEqual(BigInt(2));
+    });
+
+    it('should be able to coerce to string (without type)', function() {
+      var func = () => {};
+      var array = [];
+      var obj = {};
+
+      expect(Nife.coerceValue(undefined)).toBe(undefined);
+      expect(Nife.coerceValue(null)).toBe(null);
+      expect(Nife.coerceValue(true)).toBe(true);
+      expect(Nife.coerceValue(false)).toBe(false);
+      expect(Nife.coerceValue(10)).toBe(10);
+      expect(Nife.coerceValue(func)).toBe(func);
+      expect(Nife.coerceValue(array)).toBe(array);
+      expect(Nife.coerceValue(obj)).toBe(obj);
+      expect(Nife.coerceValue('derp')).toBe('derp');
+      expect(Nife.coerceValue('"hello"')).toBe("hello");
+      expect(Nife.coerceValue('""hello""')).toBe('"hello"');
+    });
+
+    it('should be able to coerce to string (with type)', function() {
+      expect(Nife.coerceValue(undefined, 'string')).toBe('');
+      expect(Nife.coerceValue(null, 'string')).toBe('');
+      expect(Nife.coerceValue(() => {}, 'string')).toBe('');
+      expect(Nife.coerceValue([], 'string')).toBe('');
+      expect(Nife.coerceValue({}, 'string')).toBe('');
+      expect(Nife.coerceValue(true, 'string')).toBe('true');
+      expect(Nife.coerceValue(false, 'string')).toBe('false');
+      expect(Nife.coerceValue(10, 'string')).toBe('10');
+      expect(Nife.coerceValue(BigInt(10), 'string')).toBe('10');
+      expect(Nife.coerceValue('derp', 'string')).toBe('derp');
+      expect(Nife.coerceValue('"hello"', 'string')).toBe("hello");
+      expect(Nife.coerceValue('""hello""', 'string')).toBe('"hello"');
+    });
+  });
+
   it('should be able to merge objects (shallow)', function() {
     var obj1 = { 'test1': 1 };
     var obj2 = Nife.extend(obj1, { 'test2': 2 });
