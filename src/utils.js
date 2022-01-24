@@ -633,6 +633,12 @@ function regexpEscape(str) {
   return str.replace(/[-[\]{}()*+!<=:?./\\^$|#\s,]/g, '\\$&');
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve, ms || 0);
+  });
+}
+
 const get           = prop.bind(this, 'get');
 const set           = prop.bind(this, 'set');
 const remove        = prop.bind(this, 'remove');
@@ -644,20 +650,21 @@ const setMetaNS     = prop.bind(this, 'setMetaNS');
 const removeMetaNS  = prop.bind(this, 'removeMetaNS');
 
 module.exports = {
-  now,
+  camelCaseToSnakeCase,
+  capitalize,
+  createResolvable,
+  firstValue,
   instanceOf,
-  sizeOf,
   isEmpty,
   isNotEmpty,
-  capitalize,
-  uncapitalize,
-  camelCaseToSnakeCase,
-  snakeCaseToCamelCase,
-  firstValue,
   lastValue,
-  createResolvable,
-  splitBy,
+  now,
   regexpEscape,
+  sizeOf,
+  sleep,
+  snakeCaseToCamelCase,
+  splitBy,
+  uncapitalize,
   get,
   set,
   remove,
