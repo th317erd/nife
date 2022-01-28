@@ -244,6 +244,15 @@ describe("DataUtils", function() {
       expect(Nife.propsDiffer({ 'hello': 'world' }, { 'hello': 'world' })).toBe(false);
       expect(Nife.propsDiffer({ 'hello': 'world' }, { 'hello': 'worldy' })).toBe(true);
     });
+
+    it('should be able to check if objects differ (specifying specific keys)', function() {
+      var obj = {};
+      var a   = { 'derp': true, 'test': 1, 'hello': null, 'object': obj, 'differ': undefined };
+      var b   = { 'derp': true, 'test': 1, 'hello': null, 'object': obj, 'differ': 0 };
+
+      expect(Nife.propsDiffer(a, b)).toBe(true);
+      expect(Nife.propsDiffer(a, b, [ 'derp', 'test', 'hello', 'object' ])).toBe(false);
+    });
   });
 
   describe('toArray', function() {

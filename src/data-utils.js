@@ -174,7 +174,7 @@ function toLookup(pluckKey, data) {
   return obj;
 }
 
-function propsDiffer(props1, props2) {
+function propsDiffer(props1, props2, _keys) {
   if (props1 === props2)
     return false;
 
@@ -182,13 +182,20 @@ function propsDiffer(props1, props2) {
     return true;
 
   if (props1 instanceof Object && props2 instanceof Object) {
-    var keys1 = Object.keys(props1);
-    var keys2 = Object.keys(props2);
+    var allKeys;
 
-    if (keys1.length !== keys2.length)
-      return true;
+    if (_keys instanceof Array) {
+      allKeys = _keys;
+    } else {
+      var keys1 = Object.keys(props1);
+      var keys2 = Object.keys(props2);
 
-    var allKeys = Object.keys(keys1.concat(keys2).reduce((obj, key) => obj[key] = obj, {}));
+      if (keys1.length !== keys2.length)
+        return true;
+
+      allKeys = arrayUnion(keys1, keys2);
+    }
+
     for (var i = 0, il = allKeys.length; i < il; i++) {
       var key     = allKeys[i];
       var value1  = props1[key];
