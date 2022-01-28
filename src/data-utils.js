@@ -348,11 +348,52 @@ function coerceValue(_value, _type) {
   }
 }
 
+function toArray(item) {
+  if (item instanceof Array)
+    return item;
+
+  return [ item ];
+}
+
+function subtractFromArray(sourceArray, _itemsToSubtract) {
+  if (arguments.length < 2)
+    return sourceArray.slice();
+
+  var itemsToSubtract = toArray(_itemsToSubtract);
+  return sourceArray.filter((item) => {
+    if (itemsToSubtract.indexOf(item) >= 0)
+      return false;
+
+    return true;
+  });
+}
+
+function arrayUnion(...args) {
+  var map = new Map();
+  for (var i = 0, il = args.length; i < il; i++) {
+    var arg = args[i];
+
+    if (arg instanceof Array) {
+      for (var j = 0, jl = arg.length; j < jl; j++) {
+        var item = arg[j];
+        map.set(item, item);
+      }
+    } else {
+      map.set(arg, arg);
+    }
+  }
+
+  return Array.from(map.values());
+}
+
 module.exports = {
+  arrayUnion,
+  coerceValue,
   extend,
   pluck,
-  toLookup,
   propsDiffer,
+  subtractFromArray,
+  toArray,
+  toLookup,
   uniq,
-  coerceValue,
 };
