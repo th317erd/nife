@@ -181,34 +181,42 @@ function propsDiffer(props1, props2, _keys) {
   if (typeof props1 !== typeof props2)
     return true;
 
-  if (props1 instanceof Object && props2 instanceof Object) {
-    var allKeys;
+  if (props1 == null || props2 == null)
+    return (props1 !== props2);
 
-    if (_keys instanceof Array) {
-      allKeys = _keys;
-    } else {
-      var keys1 = Object.keys(props1);
-      var keys2 = Object.keys(props2);
-
-      if (keys1.length !== keys2.length)
-        return true;
-
-      allKeys = arrayUnion(keys1, keys2);
-    }
-
-    for (var i = 0, il = allKeys.length; i < il; i++) {
-      var key     = allKeys[i];
-      var value1  = props1[key];
-      var value2  = props2[key];
-
-      if (value1 !== value2)
-        return true;
-    }
-
-    return false;
+  if (
+    typeof props1 === 'string' || props1 instanceof String ||
+    typeof props1 === 'number' || props1 instanceof Number ||
+    typeof props1 === 'boolean' || props1 instanceof Boolean ||
+    typeof props1 === 'bigint' || props1 instanceof BigInt
+  ) {
+    return (props1.valueOf() !== props2.valueOf());
   }
 
-  return (props1 !== props2);
+  var allKeys;
+
+  if (_keys instanceof Array) {
+    allKeys = _keys;
+  } else {
+    var keys1 = Object.keys(props1);
+    var keys2 = Object.keys(props2);
+
+    if (keys1.length !== keys2.length)
+      return true;
+
+    allKeys = arrayUnion(keys1, keys2);
+  }
+
+  for (var i = 0, il = allKeys.length; i < il; i++) {
+    var key     = allKeys[i];
+    var value1  = props1[key];
+    var value2  = props2[key];
+
+    if (value1 !== value2)
+      return true;
+  }
+
+  return false;
 }
 
 function uniq(items) {
