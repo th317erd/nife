@@ -97,10 +97,10 @@ function prop(cmd, _node, namespace) {
     throw new Error('Attempt to set on and empty context');
   }
 
-  var prop,
-      fullPath = '' + arguments[argStartIndex],
-      nextIsArray,
-      parts = [];
+  var prop;
+  var fullPath = '' + arguments[argStartIndex];
+  var nextIsArray;
+  var parts = [];
 
   //No path
   if (!fullPath) {
@@ -123,13 +123,16 @@ function prop(cmd, _node, namespace) {
       parts = fullPath.replace(/\[/g,'.[').split('.');
 
     for (var i = 0, i2 = 1, il = parts.length; i < il; i++, i2++) {
-      var part = parts[i],
-          isLast = (i2 >= il),
-          isArrayIndex = (part.charAt(0) === '[');
+      var part          = parts[i];
+      var isLast        = (i2 >= il);
+      var isArrayIndex  = (part.charAt(0) === '[');
 
       //Is this an array index
       if (isArrayIndex)
         part = part.substring(1, part.length - 1);
+
+      if (context && !context.hasOwnProperty(part) && context.hasOwnProperty(Symbol.for(part)))
+        part = Symbol.for(part);
 
       //Get prop
       prop = context[part];
@@ -177,8 +180,14 @@ function prop(cmd, _node, namespace) {
           context = prop;
         }
 
-        if (part)
+        if (part) {
+          if (typeof part === 'symbol') {
+            var partStr = part.toString();
+            part = partStr.substring(7, partStr.length - 1);
+          }
+
           finalPath.push((isArrayIndex) ? ('[' + part + ']') : part);
+        }
       } else {
         if (prop === undefined || prop === null || ((typeof prop === 'number' || prop instanceof Number) && (isNaN(prop) || !isFinite(prop))))
           return (argStartIndexOne >= arguments.length) ? prop : arguments[argStartIndexOne];
@@ -186,6 +195,9 @@ function prop(cmd, _node, namespace) {
       }
     }
   } else {
+    if (context && !context.hasOwnProperty(fullPath) && context.hasOwnProperty(Symbol.for(fullPath)))
+      fullPath = Symbol.for(fullPath);
+
     if (op & REMOVE) {
       if (context && (!Object.isExtensible(context) || Object.isFrozen(context)))
         return prop;
@@ -320,7 +332,7 @@ function sizeOf(obj) {
     return obj.length;
 
   if (obj.constructor === Object.prototype.constructor)
-    return Object.keys(obj).length;
+    return Object.keys(obj).length + Object.getOwnPropertySymbols(obj).length;
 
   return 0;
 }

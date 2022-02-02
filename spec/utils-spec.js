@@ -49,6 +49,11 @@ describe("Utils", function() {
     expect(Nife.instanceOf(() => {}, 'function')).toBe(true);
     expect(Nife.instanceOf([], 'array')).toBe(true);
     expect(Nife.instanceOf([], 'object')).toBe(false);
+    expect(Nife.instanceOf(Symbol.for('test'), 'symbol')).toBe(true);
+    expect(Nife.instanceOf(Symbol.for('test'), 'object')).toBe(false);
+    expect(Nife.instanceOf(Symbol.for('test'), 'array')).toBe(false);
+    expect(Nife.instanceOf(Symbol.for('test'), 'number')).toBe(false);
+    expect(Nife.instanceOf(Symbol.for('test'), 'string')).toBe(false);
   });
 
   it('should be able to get a property', function() {
@@ -68,6 +73,9 @@ describe("Utils", function() {
     expect(Nife.get(obj, 'deep.list[2].more')).toBe('yes, more');
     expect(Nife.get(obj, 'nullKey')).toBe(null);
     expect(Nife.get(obj, 'nullKey', undefined)).toBe(undefined);
+
+    var obj2 = { [Symbol.for('test')]: { 'stuff': true } };
+    expect(Nife.get(obj2, 'test.stuff')).toEqual(true);
   });
 
   it('should be able to set a property', function() {
@@ -80,6 +88,12 @@ describe("Utils", function() {
     Nife.set(obj, 'deep.list[0]', 'FIRST');
     Nife.set(obj, 'deep.list[1]', 'SECOND');
     Nife.set(obj, 'deep.list[2].more', 'HOLY MOLY!');
+
+    var a = Symbol.for('wow');
+    var obj2 = { [a]: { test: 2 } };
+    var path = Nife.set(obj2, 'wow.test', 4);
+    expect(path).toEqual('wow.test');
+    expect(Nife.get(obj2, 'wow.test')).toEqual(4);
 
     expect(Nife.get(obj, 'hello')).toBe('Other World');
     expect(Nife.get(obj, 'bool')).toBe(false);
@@ -114,6 +128,7 @@ describe("Utils", function() {
     expect(Nife.isEmpty('')).toBe(true);
     expect(Nife.isEmpty([])).toBe(true);
     expect(Nife.isEmpty({})).toBe(true);
+    expect(Nife.isEmpty({ [Symbol.for('test')]: 1 })).toBe(false);
 
     expect(Nife.isEmpty(Infinity)).toBe(false);
     expect(Nife.isEmpty([ null ])).toBe(false);
@@ -170,6 +185,7 @@ describe("Utils", function() {
   it('should be able to get size of different objects', function() {
     expect(Nife.sizeOf([])).toBe(0);
     expect(Nife.sizeOf({})).toBe(0);
+    expect(Nife.sizeOf({ [Symbol.for('test')]: true })).toBe(1);
     expect(Nife.sizeOf([ 1, 2, 3 ])).toBe(3);
     expect(Nife.sizeOf({ 'derp': true })).toBe(1);
     expect(Nife.sizeOf('derp')).toBe(4);

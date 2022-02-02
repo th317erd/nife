@@ -15,6 +15,9 @@ function extend() {
           continue;
 
         var keys = Object.keys(thisArg);
+        if (!noSymbols)
+          keys = keys.concat(Object.getOwnPropertySymbols(thisArg));
+
         for (var j = 0, jLen = keys.length; j < jLen; j++) {
           var key = keys[j];
           if (key === '__proto__' || key === 'constructor' || key === 'prototype')
@@ -52,6 +55,9 @@ function extend() {
           continue;
 
         var keys = Object.keys(thisArg);
+        if (!noSymbols)
+          keys = keys.concat(Object.getOwnPropertySymbols(thisArg));
+
         for (var j = 0, jLen = keys.length; j < jLen; j++) {
           var key = keys[j];
           if (key === '__proto__' || key === 'constructor' || key === 'prototype')
@@ -88,6 +94,7 @@ function extend() {
     return arguments[0];
 
   var isDeep          = false;
+  var noSymbols       = false;
   var allowOverwrite  = true;
   var startIndex      = 0;
   var dst             = arguments[0];
@@ -98,6 +105,7 @@ function extend() {
     startIndex++;
   } else if (typeof dst === 'number') {
     isDeep = (dst & extend.DEEP);
+    noSymbols = (dst & extend.NO_SYMBOLS);
     allowOverwrite = !(dst & extend.NO_OVERWRITE);
     startIndex++;
     filterFunc = (dst & extend.FILTER) ? arguments[startIndex++] : undefined;
@@ -119,6 +127,7 @@ function extend() {
   base.DEEP         = 0x01;
   base.NO_OVERWRITE = 0x02;
   base.FILTER       = 0x04;
+  base.NO_SYMBOLS   = 0x08;
 })(extend);
 
 function pluck(keys) {
@@ -174,7 +183,7 @@ function toLookup(pluckKey, data) {
   return obj;
 }
 
-function propsDiffer(props1, props2, _keys) {
+function propsDiffer(props1, props2, _keys, symbols = false) {
   if (props1 === props2)
     return false;
 
@@ -200,6 +209,11 @@ function propsDiffer(props1, props2, _keys) {
   } else {
     var keys1 = Object.keys(props1);
     var keys2 = Object.keys(props2);
+
+    if (symbols) {
+      keys1 = keys1.concat(Object.getOwnPropertySymbols(props1));
+      keys2 = keys2.concat(Object.getOwnPropertySymbols(props2));
+    }
 
     if (keys1.length !== keys2.length)
       return true;

@@ -129,6 +129,18 @@ describe("DataUtils", function() {
       var obj3 = Nife.extend({}, obj2);
       expect(obj3).not.toBe(obj2);
       expect(obj3).toEqual({ 'test1': 1, 'test2': 2 });
+
+      var b = Symbol.for('test1');
+      var c = Symbol.for('test2');
+
+      var obj4 = Nife.extend({}, { [b]: 'derp', [c]: true });
+      expect(obj4[b]).toEqual('derp');
+      expect(obj4[c]).toEqual(true);
+
+      var obj5 = Nife.extend(Nife.extend.NO_SYMBOLS, {}, { [b]: 'derp', [c]: true, 'test': 1 });
+      expect(obj5[b]).toEqual(undefined);
+      expect(obj5[c]).toEqual(undefined);
+      expect(obj5['test']).toEqual(1);
     });
 
     it('should be able to merge objects (deep)', function() {
@@ -218,6 +230,11 @@ describe("DataUtils", function() {
       expect(Nife.uniq([ 1, 1, obj, obj, 3, 4, 5 ])).toEqual([ 1, obj, 3, 4, 5 ]);
 
       expect(Nife.uniq([ 1, 'derp', obj, obj, 3, 4, 'derp' ])).toEqual([ 1, 'derp', obj, 3, 4 ]);
+
+      var a = Symbol.for('test1');
+      var b = Symbol.for('test2');
+
+      expect(Nife.uniq([ b, 1, 'derp', a, a, b ])).toEqual([ b, 1, 'derp', a ]);
     });
   });
 
@@ -272,12 +289,16 @@ describe("DataUtils", function() {
     it('should be able to subtract items from an array', function() {
       var a = [ 'one', 'two', 'three', 'four' ];
 
+      var b = Symbol.for('test1');
+      var c = Symbol.for('test2');
+
       expect(Nife.subtractFromArray(a)).not.toBe(a);
       expect(Nife.subtractFromArray(a, 'one')).not.toBe(a);
       expect(Nife.subtractFromArray(a, 'one')).toEqual([ 'two', 'three', 'four' ]);
       expect(Nife.subtractFromArray(a, [ 'two', 'three' ])).toEqual([ 'one', 'four' ]);
       expect(Nife.subtractFromArray([ null, 1, 2, null ], [ null ])).toEqual([ 1, 2 ]);
       expect(Nife.subtractFromArray([ undefined, 1, 2, null ], [ null ])).toEqual([ undefined, 1, 2 ]);
+      expect(Nife.subtractFromArray([ b, c ], [ b ])).toEqual([ c ]);
     });
   });
 
@@ -285,12 +306,17 @@ describe("DataUtils", function() {
     it('should be able to union multiple arrays', function() {
       var a = [ 'one', 'two', 'three', 'four' ];
 
+      var b = Symbol.for('test1');
+      var c = Symbol.for('test2');
+
       expect(Nife.arrayUnion(a)).not.toBe(a);
       expect(Nife.arrayUnion(a, 'one')).toEqual(a);
       expect(Nife.arrayUnion(a, [ 'one', 'two' ])).toEqual(a);
       expect(Nife.arrayUnion(a, [ 'one', 'two' ], [ 'three' ])).toEqual(a);
       expect(Nife.arrayUnion(a, [ 'one', 'two' ], [ 'five' ])).toEqual([ 'one', 'two', 'three', 'four', 'five' ]);
       expect(Nife.arrayUnion([ null, undefined ], [ 1, 'two' ], [ true ])).toEqual([ null, undefined, 1, 'two', true ]);
+
+      expect(Nife.arrayUnion([ null, undefined ], [ b, c ], [ true, c ])).toEqual([ null, undefined, b, c, true ]);
     });
   });
 });
