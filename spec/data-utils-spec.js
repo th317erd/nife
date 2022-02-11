@@ -115,6 +115,15 @@ describe("DataUtils", function() {
       expect(Nife.coerceValue('derp', 'string')).toBe('derp');
       expect(Nife.coerceValue('"hello"', 'string')).toBe("hello");
       expect(Nife.coerceValue('""hello""', 'string')).toBe('"hello"');
+      expect(Nife.coerceValue('true', 'boolean')).toBe(true);
+      expect(Nife.coerceValue('TRUE', 'boolean')).toBe(true);
+      expect(Nife.coerceValue('1', 'boolean')).toBe(true);
+      expect(Nife.coerceValue('-1', 'boolean')).toBe(true);
+      expect(Nife.coerceValue('false', 'boolean')).toBe(false);
+      expect(Nife.coerceValue('FALSE', 'boolean')).toBe(false);
+      expect(Nife.coerceValue('0', 'boolean')).toBe(false);
+      expect(Nife.coerceValue('NaN', 'boolean')).toBe(undefined);
+      expect(Nife.coerceValue('Infinity', 'boolean')).toBe(undefined);
     });
   });
 

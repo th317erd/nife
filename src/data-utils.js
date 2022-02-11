@@ -277,6 +277,12 @@ function coerceValue(_value, _type) {
     if (!(typeOf === 'string' || value instanceof String))
       return (strict) ? undefined : !!value;
 
+    if (!strict) {
+      var number = parseNumber(value, true);
+      if (typeof number === 'number')
+        return !!number;
+    }
+
     if (('' + value).match(/^['"]*true['"]*$/i))
       return true;
 
