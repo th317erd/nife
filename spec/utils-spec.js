@@ -223,6 +223,8 @@ describe("Utils", function() {
   it('should be able to convert snake-case to camel-case', function() {
     expect(Nife.snakeCaseToCamelCase(null)).toBe(null);
     expect(Nife.snakeCaseToCamelCase(undefined)).toBe(undefined);
+    expect(Nife.snakeCaseToCamelCase('TestSnakeCase')).toEqual('TestSnakeCase');
+    expect(Nife.snakeCaseToCamelCase('TESTSNAKECASE')).toEqual('TESTSNAKECASE');
     expect(Nife.snakeCaseToCamelCase('test_snake_case')).toEqual('testSnakeCase');
     expect(Nife.snakeCaseToCamelCase('test_snake_case', true)).toEqual('TestSnakeCase');
     expect(Nife.snakeCaseToCamelCase('Test_snake_case', false)).toEqual('testSnakeCase');
