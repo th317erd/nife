@@ -125,6 +125,33 @@ describe("DataUtils", function() {
       expect(Nife.coerceValue('NaN', 'boolean')).toBe(undefined);
       expect(Nife.coerceValue('Infinity', 'boolean')).toBe(undefined);
     });
+
+    it('should be able to work with default values', function() {
+      var func = () => {};
+      var array = [];
+      var obj = {};
+
+      expect(Nife.coerceValue(undefined, undefined, 'test')).toBe('test');
+      expect(Nife.coerceValue(null, undefined, 'test')).toBe('test');
+      expect(Nife.coerceValue('derp', 'boolean', 'test')).toBe('test');
+      expect(Nife.coerceValue(undefined, 'integer', 'test')).toBe('test');
+      expect(Nife.coerceValue(null, 'integer', 'test')).toBe('test');
+      expect(Nife.coerceValue('derp', 'integer', 'test')).toBe('test');
+      expect(Nife.coerceValue(func, 'integer', 'test')).toBe('test');
+      expect(Nife.coerceValue(array, 'integer', 'test')).toBe('test');
+      expect(Nife.coerceValue(obj, 'integer', 'test')).toBe('test');
+      expect(Nife.coerceValue(undefined, 'bigint', 'test')).toBe('test');
+      expect(Nife.coerceValue(null, 'bigint', 'test')).toBe('test');
+      expect(Nife.coerceValue('derp', 'bigint', 'test')).toBe('test');
+      expect(Nife.coerceValue(func, 'bigint', 'test')).toBe('test');
+      expect(Nife.coerceValue(array, 'bigint', 'test')).toBe('test');
+      expect(Nife.coerceValue(obj, 'bigint', 'test')).toBe('test');
+      expect(Nife.coerceValue(undefined, 'string', 'test')).toBe('test');
+      expect(Nife.coerceValue(null, 'string', 'test')).toBe('test');
+      expect(Nife.coerceValue(func, 'string', 'test')).toBe('test');
+      expect(Nife.coerceValue(array, 'string', 'test')).toBe('test');
+      expect(Nife.coerceValue(obj, 'string', 'test')).toBe('test');
+    });
   });
 
   describe('extend', function() {

@@ -244,9 +244,10 @@ function uniq(items) {
   return Array.from(finalItems.keys());
 }
 
-function coerceValue(_value, _type) {
-  var value = _value;
-  var type  = (_type) ? _type.toLowerCase() : _type;
+function coerceValue(_value, _type, defaultValue) {
+  var value           = _value;
+  var type            = (_type) ? _type.toLowerCase() : _type;
+  var hasDefaultValue = (arguments.length > 2);
 
   const parseBoolean = (value, strict) => {
     if (value == null)
@@ -292,7 +293,7 @@ function coerceValue(_value, _type) {
 
   const parseNumber = (value, strict) => {
     if (value == null)
-      return (strict) ? undefined : 0;
+      return;
 
     var typeOf = typeof value;
 
@@ -311,7 +312,7 @@ function coerceValue(_value, _type) {
       return (value) ? 1 : 0;
 
     if (!(typeOf === 'string' || value instanceof String))
-      return (strict) ? undefined : 0;
+      return;
 
     if (strict && value.match(/[^\d.e-]/))
       return;
@@ -319,36 +320,36 @@ function coerceValue(_value, _type) {
     var parts     = value.split(/[^\d.e-]+/g).map((part) => part.replace(/[^\d.e-]+/g, '')).filter(Boolean);
     var firstPart = parts[0];
     if (!firstPart)
-      return (strict) ? undefined : 0;
+      return;
 
     var val = parseFloat(firstPart);
     if (!isFinite(val))
-      return (strict) ? undefined : 0;
+      return;
 
     return val;
   };
 
   const parseString = (value, strict) => {
     if (value == null)
-      return (strict) ? value : '';
+      return;
 
     var typeOf = typeof value;
 
     if (typeOf === 'number' || value instanceof Number)
-      return (isFinite(value)) ? ('' + value) : '';
+      return (isFinite(value)) ? ('' + value) : undefined;
 
     if ((typeOf === 'boolean' || value instanceof Boolean) || typeOf === 'bigint')
       return ('' + value);
 
     if (!(typeOf === 'string' || value instanceof String))
-      return (strict) ? value : '';
+      return (strict) ? value : undefined;
 
     return ('' + value).replace(/^(['"])(.*)\1$/, '$2');
   };
 
   if (!type) {
     if (value == null)
-      return value;
+      return (hasDefaultValue) ? defaultValue : value;
 
     var val = parseBoolean(value, true);
     if (typeof val === 'boolean')
@@ -361,7 +362,11 @@ function coerceValue(_value, _type) {
     if (!(typeof value === 'string' || value instanceof String))
       return value;
 
-    return parseString(value, true);
+    val = parseString(value, true);
+    if (val == null)
+      return (hasDefaultValue) ? defaultValue : '';
+
+    return val;
   } else {
     if (type === 'integer' || type === 'int' || type === 'number' || type === 'bigint') {
       var coercer;
@@ -372,13 +377,21 @@ function coerceValue(_value, _type) {
 
       var val = parseNumber(value);
       if (val == null)
-        return;
+        return (hasDefaultValue) ? defaultValue : 0;
 
       return (coercer) ? coercer(val) : val;
     } else if (type === 'bool' || type === 'boolean') {
-      return parseBoolean(value);
+      val = parseBoolean(value);
+      if (val == null)
+        return (hasDefaultValue) ? defaultValue : val;
+
+      return val;
     } else {
-      return parseString(value);
+      val = parseString(value);
+      if (val == null)
+        return (hasDefaultValue) ? defaultValue : '';
+
+      return val;
     }
   }
 }
