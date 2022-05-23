@@ -355,4 +355,21 @@ describe("DataUtils", function() {
       expect(Nife.arrayUnion([ null, undefined ], [ b, c ], [ true, c ])).toEqual([ null, undefined, b, c, true ]);
     });
   });
+
+  describe('arraySubtract', function() {
+    it('should be able to subtract multiple arrays', function() {
+      var a = [ 'one', 'two', 'three', 'four' ];
+
+      var b = Symbol.for('test1');
+      var c = Symbol.for('test2');
+
+      expect(Nife.arraySubtract(a)).not.toBe(a);
+      expect(Nife.arraySubtract(a, 'one')).toEqual([ 'two', 'three', 'four' ]);
+      expect(Nife.arraySubtract(a, [ 'one', 'two' ])).toEqual([ 'three', 'four' ]);
+      expect(Nife.arraySubtract(a, [ 'one', 'two' ], [ 'three' ])).toEqual([ 'four' ]);
+      expect(Nife.arraySubtract(a, [ 'one', 'two' ], 'four')).toEqual([ 'three' ]);
+      expect(Nife.arraySubtract([ null, undefined ], [ 1, 'two' ], [ true ])).toEqual([ null, undefined ]);
+      expect(Nife.arraySubtract([ null, undefined, b, c ], [ c ])).toEqual([ null, undefined, b ]);
+    });
+  });
 });

@@ -434,8 +434,34 @@ function arrayUnion(...args) {
   return Array.from(map.values());
 }
 
+function arraySubtract(...args) {
+  var map = new Map();
+  for (var i = 0, il = args.length; i < il; i++) {
+    var arg = args[i];
+
+    if (arg instanceof Array) {
+      for (var j = 0, jl = arg.length; j < jl; j++) {
+        var item = arg[j];
+
+        if (i === 0)
+          map.set(item, item);
+        else
+          map.delete(item);
+      }
+    } else {
+      if (i === 0)
+        map.set(arg, arg);
+      else
+        map.delete(arg);
+    }
+  }
+
+  return Array.from(map.values());
+}
+
 module.exports = {
   arrayUnion,
+  arraySubtract,
   coerceValue,
   extend,
   pluck,
