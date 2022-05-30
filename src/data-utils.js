@@ -459,9 +459,25 @@ function arraySubtract(...args) {
   return Array.from(map.values());
 }
 
+function arrayFlatten(array) {
+  let finalArray = [];
+
+  for (let i = 0, il = array.length; i < il; i++) {
+    let item = array[i];
+
+    if (Array.isArray(item))
+      finalArray = finalArray.concat(arrayFlatten(item));
+    else
+      finalArray.push(item);
+  }
+
+  return finalArray;
+}
+
 module.exports = {
-  arrayUnion,
+  arrayFlatten,
   arraySubtract,
+  arrayUnion,
   coerceValue,
   extend,
   pluck,

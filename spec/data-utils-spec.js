@@ -372,4 +372,15 @@ describe("DataUtils", function() {
       expect(Nife.arraySubtract([ null, undefined, b, c ], [ c ])).toEqual([ null, undefined, b ]);
     });
   });
+
+  describe('arrayFlatten', function() {
+    it('should be able to flatten arrays', function() {
+      var a = [ 'one', 'two', 'three', 'four' ];
+      var b = [ 1, 2, 3, 4 ];
+      var c = [ {}, null, undefined, NaN, Infinity, 0 ];
+
+      expect(Nife.arrayFlatten([ a, b, c ])).toEqual(a.concat(b, c));
+      expect(Nife.arrayFlatten([ a, b, c, [ b, [ c ] ] ])).toEqual(a.concat(b, c, b.concat(c)));
+    });
+  });
 });
