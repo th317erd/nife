@@ -280,7 +280,7 @@ function instanceOf(obj) {
     else if (val === BigInt)
       val = 'bigint';
 
-    if (val === 'object' && obj.constructor === Object.prototype.constructor)
+    if (val === 'object' && (obj.constructor === Object.prototype.constructor || obj.constructor.name === 'Object'))
       return true;
 
     if ((val === 'promise' || val === 'deferred') && isDeferredType(obj))
@@ -331,7 +331,7 @@ function sizeOf(obj) {
   if ((typeof obj.length === 'number' || obj.length instanceof Number) && isFinite(obj.length))
     return obj.length;
 
-  if (obj.constructor === Object.prototype.constructor)
+  if (obj.constructor === Object.prototype.constructor || obj.constructor.name === 'Object')
     return Object.keys(obj).length + Object.getOwnPropertySymbols(obj).length;
 
   return 0;
