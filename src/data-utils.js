@@ -33,7 +33,7 @@ function extend() {
             continue;
 
           if (val && typeof val === 'object' && !(val instanceof String) && !(val instanceof Number) &&
-              (val.constructor === Object.prototype.constructor || val.constructor === Array.prototype.constructor)) {
+              ((allowInstances || val.constructor === Object.prototype.constructor) || val.constructor === Array.prototype.constructor)) {
             var isArray = (val instanceof Array);
 
             if (!dstVal)
@@ -95,6 +95,7 @@ function extend() {
 
   var isDeep          = false;
   var noSymbols       = false;
+  var allowInstances  = false;
   var allowOverwrite  = true;
   var startIndex      = 0;
   var dst             = arguments[0];
@@ -104,9 +105,10 @@ function extend() {
     isDeep = dst;
     startIndex++;
   } else if (typeof dst === 'number') {
-    isDeep = (dst & extend.DEEP);
-    noSymbols = (dst & extend.NO_SYMBOLS);
+    isDeep = !!(dst & extend.DEEP);
+    noSymbols = !!(dst & extend.NO_SYMBOLS);
     allowOverwrite = !(dst & extend.NO_OVERWRITE);
+    allowInstances = !!(dst & extend.INSTANCES);
     startIndex++;
     filterFunc = (dst & extend.FILTER) ? arguments[startIndex++] : undefined;
   }
@@ -128,6 +130,7 @@ function extend() {
   base.NO_OVERWRITE = 0x02;
   base.FILTER       = 0x04;
   base.NO_SYMBOLS   = 0x08;
+  base.INSTANCES    = 0x10;
 })(extend);
 
 function pluck(keys) {

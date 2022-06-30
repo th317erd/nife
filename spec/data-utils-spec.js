@@ -218,6 +218,25 @@ describe("DataUtils", function() {
 
       expect(obj2).toEqual({ 'test1': 1, 'array': [ 1, 2, 3 ], 'object': { 'key1': true } });
     });
+
+    it('should be able to walk custom instance types', function() {
+      class Test {
+        constructor() {
+          this.derp = true;
+          this.hello = 'world';
+        }
+      }
+
+      var obj1 = { 'test1': 1, 'array': [ 1, 2, 3 ], 'custom': new Test() };
+      var obj2 = Nife.extend(true, {}, obj1);
+
+      expect(obj2).not.toBe(obj1);
+      expect(obj2).toEqual({ 'test1': 1, 'array': [ 1, 2, 3 ], 'custom': obj1.custom });
+
+      var obj3 = Nife.extend(Nife.extend.DEEP | Nife.extend.INSTANCES, {}, obj1);
+      expect(obj3).not.toBe(obj1);
+      expect(obj3).toEqual({ 'test1': 1, 'array': [ 1, 2, 3 ], 'custom': { derp: true, hello: 'world' } });
+    });
   });
 
   describe('pluck', function() {
