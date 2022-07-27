@@ -331,9 +331,32 @@ describe("DataUtils", function() {
     it('should be able to convert anything to an array of anything', function() {
       var a = [ 'test' ];
       var b = [ [ 'test' ] ];
+      var c = new Set();
+      var d = new Map();
+
+      c.add('test');
+      c.add(2);
+      c.add(true);
+
+      d.set('test1', 'test');
+      d.set('test2', 2);
+      d.set('test3', true);
 
       expect(Nife.toArray(a)).toBe(a);
       expect(Nife.toArray(b)).toBe(b);
+
+      expect(Nife.toArray(c)).toEqual([
+        'test',
+        2,
+        true
+      ]);
+
+      expect(Nife.toArray(d)).toEqual([
+        'test',
+        2,
+        true
+      ]);
+
       expect(Nife.toArray('derp')).toEqual([ 'derp' ]);
       expect(Nife.toArray(null)).toEqual([ null ]);
       expect(Nife.toArray(undefined)).toEqual([ undefined ]);

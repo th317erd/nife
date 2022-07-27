@@ -400,8 +400,11 @@ function coerceValue(_value, _type, defaultValue) {
 }
 
 function toArray(item) {
-  if (item instanceof Array)
+  if (Array.isArray(item))
     return item;
+
+  if (item && typeof item.values === 'function' && item.values.length === 0)
+    return Array.from(item.values());
 
   return [ item ];
 }
