@@ -253,7 +253,7 @@ const globalScope = (typeof global !== 'undefined') ? global : (typeof window !=
 function instanceOf(obj) {
   function testType(obj, _val) {
     function isDeferredType(obj) {
-      if (obj instanceof Promise || (obj.constructor && object.constructor.name === 'Promise'))
+      if (obj instanceof Promise || (obj.constructor && obj.constructor.name === 'Promise'))
         return true;
 
       // Quack quack...
@@ -287,7 +287,14 @@ function instanceOf(obj) {
     else if (val === globalScope.WeakMap)
       val = 'weakmap';
     else if (val === globalScope.Set)
-      val = 'map';
+      val = 'set';
+    else if (val === globalScope.Symbol)
+      val = 'symbol';
+    else if (val === globalScope.Buffer)
+      val = 'buffer';
+
+    if (val === 'buffer' && globalScope.Buffer && globalScope.Buffer.isBuffer(obj))
+      return true;
 
     if (val === 'number' && (typeOf === 'number' || obj instanceof Number || (obj.constructor && obj.constructor.name === 'Number'))) {
       if (!isFinite(obj))
@@ -301,6 +308,10 @@ function instanceOf(obj) {
 
     if (val === 'object') {
       if ((obj.constructor === Object.prototype.constructor || (obj.constructor && obj.constructor.name === 'Object')))
+        return true;
+
+      // Null prototype on object
+      if (typeOf === 'object' && !obj.constructor)
         return true;
 
       return false;

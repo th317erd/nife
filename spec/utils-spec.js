@@ -41,24 +41,152 @@ describe("Utils", function() {
   describe('instanceOf', () => {
     it('should be able to properly identify types', function() {
       class TestClass {};
+      class FakePromise {
+        then() {}
+        catch() {}
+      }
 
-      expect(Nife.instanceOf(new TestClass(), 'object')).toBe(false);
-      expect(Nife.instanceOf(new TestClass(), TestClass)).toBe(true);
-      expect(Nife.instanceOf({}, 'object')).toBe(true);
-      expect(Nife.instanceOf(new String('test'), 'object')).toBe(false);
-      expect(Nife.instanceOf(new String('test'), 'string')).toBe(true);
-      expect(Nife.instanceOf('test', 'string')).toBe(true);
-      expect(Nife.instanceOf(5, 'string')).toBe(false);
-      expect(Nife.instanceOf(BigInt(2), 'number')).toBe(false);
-      expect(Nife.instanceOf(BigInt(2), 'bigint')).toBe(true);
-      expect(Nife.instanceOf(() => {}, 'function')).toBe(true);
-      expect(Nife.instanceOf([], 'array')).toBe(true);
-      expect(Nife.instanceOf([], 'object')).toBe(false);
-      expect(Nife.instanceOf(Symbol.for('test'), 'symbol')).toBe(true);
-      expect(Nife.instanceOf(Symbol.for('test'), 'object')).toBe(false);
-      expect(Nife.instanceOf(Symbol.for('test'), 'array')).toBe(false);
-      expect(Nife.instanceOf(Symbol.for('test'), 'number')).toBe(false);
-      expect(Nife.instanceOf(Symbol.for('test'), 'string')).toBe(false);
+      let testValues = {
+        'custom': {
+          values:   [ new TestClass() ],
+          matches:  [ TestClass ],
+          fails:    [ 'object' ],
+        },
+        'object': {
+          values:    [ {}, Object.create(null) ],
+          matches:  [ 'object', Object ],
+        },
+        'string': {
+          values:   [ 'test', String('test') ],
+          matches:  [ 'string', String ],
+        },
+        'number': {
+          values:   [ 10, Number(0) ],
+          matches:  [ 'number', Number ],
+          fails:    [ Infinity, NaN ],
+        },
+        'bigint': {
+          values:   [ BigInt(10), BigInt(0) ],
+          matches:  [ 'bigint', BigInt ],
+        },
+        'boolean': {
+          values:   [ true, false, Boolean(true), Boolean(false) ],
+          matches:  [ 'boolean', Boolean ],
+        },
+        'function': {
+          values:   [ TestClass, () => {}, function(){} ],
+          matches:  [ 'function', Function ],
+        },
+        'promise': {
+          values:   [ Promise.resolve(), Promise.reject(new Error('test')).catch(() => {}), new FakePromise() ],
+          matches:  [ 'promise', Promise ],
+        },
+        'array': {
+          values:   [ [], new Array() ],
+          matches:  [ 'array', Array ],
+        },
+        'symbol': {
+          values:   [ Symbol.for('test') ],
+          matches:  [ 'symbol', Symbol ],
+        },
+        'map': {
+          values:   [ new Map() ],
+          matches:  [ 'map', Map ],
+        },
+        'weakmap': {
+          values:   [ new WeakMap() ],
+          matches:  [ 'weakmap', WeakMap ],
+        },
+        'set': {
+          values:   [ new Set() ],
+          matches:  [ 'set', Set ],
+        },
+        'buffer': {
+          values:   [ Buffer.alloc(10) ],
+          matches:  [ 'buffer', Buffer ],
+        },
+      };
+
+      let checkCount = 0;
+
+      const runTestsForItem = (name, item, secondaryCheck) => {
+        let values = item.values;
+        let matches = (secondaryCheck) ? secondaryCheck.matches : item.matches;
+        let fails = (secondaryCheck) ? secondaryCheck.fails : item.fails;
+
+        // Test against myself
+        for (let j = 0, jl = values.length; j < jl; j++) {
+          let value = values[j];
+
+          for (let k = 0, kl = matches.length; k < kl; k++) {
+            let match = matches[k];
+            let result = Nife.instanceOf(value, match);
+
+            if (secondaryCheck)
+              result = !result;
+
+            if (!result) {
+              if (secondaryCheck)
+                console.error(`Instanceof failed[matches] (false while inverted) for "${name}" against value at index ${j} for check ${match}: `, value);
+              else
+                console.error(`Instanceof failed[matches] (false) for "${name}" against value at index ${j} for check ${match}: `, value);
+            }
+
+            expect(result).toEqual(true);
+
+            checkCount++;
+          }
+        }
+
+        if (fails && fails.length) {
+          for (let j = 0, jl = fails.length; j < jl; j++) {
+            let failValue = fails[j];
+
+            for (let k = 0, kl = matches.length; k < kl; k++) {
+              let match = matches[k];
+              let result = Nife.instanceOf(failValue, match);
+
+              if (result) {
+                if (secondaryCheck)
+                  console.error(`Instanceof failed[fails] (true while inverted) for "${name}" against value at index ${j} for check ${match}: `, failValue);
+                else
+                  console.error(`Instanceof failed[fails] (true) for "${name}" against value at index ${j} for check ${match}: `, failValue);
+              }
+
+              expect(result).toEqual(false);
+
+              checkCount++;
+            }
+          }
+        }
+      };
+
+      // Run checks against all items,
+      // and then also across all items
+      // against all other items
+      let keys = Object.keys(testValues);
+      for (let i = 0, il = keys.length; i < il; i++) {
+        let key1 = keys[i];
+        let item1 = testValues[key1];
+
+        // Run checks against myself
+        runTestsForItem(key1, item1);
+
+        // Run checks against everyone else
+        // (which should all be false)
+        for (let j = 0, jl = keys.length; j < jl; j++) {
+          let key2 = keys[j];
+          if (key1 === key2)
+            continue;
+
+          let item2 = testValues[key2];
+          runTestsForItem(key2, item1, item2);
+        }
+      }
+
+      // Ensure something didn't go haywire
+      // and that we actually ran our tests
+      expect(checkCount).toEqual(772);
     });
   });
 
