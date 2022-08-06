@@ -248,13 +248,16 @@ function prop(cmd, _node, namespace) {
   return (op & SET) ? finalPath.join('.').replace(/\.\[/g, '[') : prop;
 }
 
+const globalScope = (typeof global !== 'undefined') ? global : (typeof window !== undefined) ? window : this;
+
 function instanceOf(obj) {
   function testType(obj, _val) {
     function isDeferredType(obj) {
-      if (obj instanceof Promise)
+      if (obj instanceof Promise || (obj.constructor && object.constructor.name === 'Promise'))
         return true;
 
-      if (typeof obj.then === 'function')
+      // Quack quack...
+      if (typeof obj.then === 'function' && typeof obj.catch === 'function')
         return true;
 
       return false;
@@ -263,51 +266,74 @@ function instanceOf(obj) {
     var val     = _val,
         typeOf  = (typeof obj);
 
-    if (val === String)
+    if (val === globalScope.String)
       val = 'string';
-    else if (val === Number)
+    else if (val === globalScope.Number)
       val = 'number';
-    else if (val === Boolean)
+    else if (val === globalScope.Boolean)
       val = 'boolean';
-    else if (val === Function)
+    else if (val === globalScope.Function)
       val = 'function';
-    else if (val === Array)
+    else if (val === globalScope.Array)
       val = 'array';
-    else if (val === Object)
+    else if (val === globalScope.Object)
       val = 'object';
-    else if (val === Promise)
+    else if (val === globalScope.Promise)
       val = 'promise';
-    else if (val === BigInt)
+    else if (val === globalScope.BigInt)
       val = 'bigint';
+    else if (val === globalScope.Map)
+      val = 'map';
+    else if (val === globalScope.WeakMap)
+      val = 'weakmap';
+    else if (val === globalScope.Set)
+      val = 'map';
 
-    if (val === 'object' && (obj.constructor === Object.prototype.constructor || obj.constructor.name === 'Object'))
+    if (val === 'number' && (typeOf === 'number' || obj instanceof Number || (obj.constructor && obj.constructor.name === 'Number'))) {
+      if (!isFinite(obj))
+        return false;
+
+      return true;
+    }
+
+    if (val !== 'object' && val === typeOf)
+      return true;
+
+    if (val === 'object') {
+      if ((obj.constructor === Object.prototype.constructor || (obj.constructor && obj.constructor.name === 'Object')))
+        return true;
+
+      return false;
+    }
+
+    if (val === 'array' && (Array.isArray(obj) || obj instanceof Array || (obj.constructor && obj.constructor.name === 'Array')))
       return true;
 
     if ((val === 'promise' || val === 'deferred') && isDeferredType(obj))
       return true;
 
-    if (val !== 'object' && val === typeOf)
+    if (val === 'string' && (obj instanceof globalScope.String || (obj.constructor && obj.constructor.name === 'String')))
       return true;
 
-    if (val === 'number' && (typeof obj === 'number' || (obj instanceof Number)) && !isFinite(obj))
-      return false;
-
-    if (val === 'number' && obj instanceof Number)
+    if (val === 'boolean' && (obj instanceof globalScope.Boolean || (obj.constructor && obj.constructor.name === 'Boolean')))
       return true;
 
-    if (val === 'string' && obj instanceof String)
+    if (val === 'map' && (obj instanceof globalScope.Map || (obj.constructor && obj.constructor.name === 'Map')))
       return true;
 
-    if (val === 'boolean' && obj instanceof Boolean)
+    if (val === 'weakmap' && (obj instanceof globalScope.WeakMap || (obj.constructor && obj.constructor.name === 'WeakMap')))
+      return true;
+
+    if (val === 'set' && (obj instanceof globalScope.Set || (obj.constructor && obj.constructor.name === 'Set')))
       return true;
 
     if (val === 'function' && typeOf === 'function')
       return true;
 
-    if (val === 'array' && obj instanceof Array)
+    if (typeof val === 'function' && obj instanceof val)
       return true;
 
-    if (typeof val === 'function' && obj instanceof val)
+    if (typeof val === 'string' && obj.constructor && obj.constructor.name === val)
       return true;
 
     return false;
@@ -331,34 +357,39 @@ function sizeOf(obj) {
   if ((typeof obj.length === 'number' || obj.length instanceof Number) && isFinite(obj.length))
     return obj.length;
 
-  if (obj.constructor === Object.prototype.constructor || obj.constructor.name === 'Object')
-    return Object.keys(obj).length + Object.getOwnPropertySymbols(obj).length;
+  if (obj.constructor === Object.prototype.constructor || (obj.constructor && obj.constructor.name === 'Object'))
+    return (Object.keys(obj).length + Object.getOwnPropertySymbols(obj).length);
+
+  if (typeof obj.size === 'number')
+    return obj.size;
 
   return 0;
 }
 
-function isEmpty() {
-  for (var i = 0, len = arguments.length; i < len; i++) {
-    var value = arguments[i];
-    if (value == null)
-      return true;
+const EMPTY_STRING_RE = (/\S/);
 
-    if (value === Infinity)
-      continue;
+function isEmpty(value) {
+  if (value == null)
+    return true;
 
-    if (instanceOf(value, 'string'))
-      return !value.match(/\S/);
-    else if (instanceOf(value, 'number') && isFinite(value))
-      continue;
-    else if (!instanceOf(value, 'boolean', 'bigint', 'function') && sizeOf(value) == 0)
-      return true;
-  }
+  if (Object.is(value, Infinity))
+    return false;
+
+  if (Object.is(value, NaN))
+    return true;
+
+  if (instanceOf(value, 'string'))
+    return !EMPTY_STRING_RE.test(value);
+  else if (instanceOf(value, 'number') && isFinite(value))
+    return false;
+  else if (!instanceOf(value, 'boolean', 'bigint', 'function') && sizeOf(value) == 0)
+    return true;
 
   return false;
 }
 
-function isNotEmpty() {
-  return !isEmpty.apply(this, arguments);
+function isNotEmpty(value) {
+  return !isEmpty.call(this, value);
 }
 
 function firstValue(value, defaultValue) {
@@ -651,6 +682,83 @@ function sleep(ms) {
   });
 }
 
+function iterate(obj, callback, context) {
+  if (!obj)
+    return context;
+
+  let _stop = false;
+  let stop  = () => _stop = true;
+  let scope = { stop, context, collection: obj };
+
+  if (Array.isArray(obj)) {
+    scope.type = 'Array';
+
+    for (let i = 0, il = obj.length; i < il; i++) {
+      scope.value = obj[i];
+      scope.index = scope.key = i;
+
+      callback.call(this, scope);
+
+      if (_stop)
+        break;
+    }
+  } else if (typeof obj.entries === 'function') {
+    if (obj instanceof Set || obj.constructor.name === 'Set') {
+      scope.type = 'Set';
+
+      let index = 0;
+      for (let item of obj.values()) {
+        scope.value = item;
+        scope.key = item;
+        scope.index = index++;
+        scope.collection = obj;
+
+        callback.call(this, scope);
+
+        if (_stop)
+          break;
+      }
+    } else {
+      scope.type = obj.constructor.name;
+
+      let index = 0;
+      for (let [ key, value ] of obj.entries()) {
+        scope.value = value;
+        scope.key = key;
+        scope.index = index++;
+        scope.collection = obj;
+
+        callback.call(this, scope);
+
+        if (_stop)
+          break;
+      }
+    }
+  } else {
+    if (instanceOf(obj, 'boolean', 'number', 'bigint', 'function'))
+      return context;
+
+    scope.type = (obj.constructor) ? obj.constructor.name : 'Object';
+
+    let keys = Object.keys(obj);
+    for (let i = 0, il = keys.length; i < il; i++) {
+      let key   = keys[i];
+      let value = obj[key];
+
+      scope.value = value;
+      scope.key = key;
+      scope.index = i;
+
+      callback.call(this, scope);
+
+      if (_stop)
+        break;
+    }
+  }
+
+  return context;
+}
+
 const get           = prop.bind(this, 'get');
 const set           = prop.bind(this, 'set');
 const remove        = prop.bind(this, 'remove');
@@ -686,4 +794,5 @@ module.exports = {
   getMetaNS,
   setMetaNS,
   removeMetaNS,
+  iterate,
 };
