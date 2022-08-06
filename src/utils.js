@@ -699,7 +699,8 @@ function iterate(obj, callback, context) {
 
   let _stop = false;
   let stop  = () => _stop = true;
-  let scope = { stop, context, collection: obj };
+  let isStopped = () => _stop;
+  let scope = { stop, isStopped, context, collection: obj };
 
   if (Array.isArray(obj)) {
     scope.type = 'Array';
