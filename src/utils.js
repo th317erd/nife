@@ -377,8 +377,6 @@ function sizeOf(obj) {
   return 0;
 }
 
-const EMPTY_STRING_RE = (/\S/);
-
 function isEmpty(value) {
   if (value == null)
     return true;
@@ -390,7 +388,7 @@ function isEmpty(value) {
     return true;
 
   if (instanceOf(value, 'string'))
-    return !EMPTY_STRING_RE.test(value);
+    return !(/\S/).test(value);
   else if (instanceOf(value, 'number') && isFinite(value))
     return false;
   else if (!instanceOf(value, 'boolean', 'bigint', 'function') && sizeOf(value) == 0)
