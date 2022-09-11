@@ -1,4 +1,4 @@
-export declare interface Resolvable extends Promise {
+export declare interface Resolvable<T> extends Promise<T> {
   resolve(value: any): void;
   reject(value: any): void;
   status(): 'pending' | 'resolved' | 'rejected';
@@ -17,7 +17,7 @@ export declare interface IterateContext<T, C> {
 
 export function camelCaseToSnakeCase(value: string): string;
 export function capitalize(value: string, allWords?: boolean): string;
-export function createResolvable(): Resolvable;
+export function createResolvable<T>(): Resolvable<T>;
 export function firstValue(value: Array<any> | null | undefined, defaultValue?: any): any;
 export function instanceOf(value: any, ...types: Array<string | Function>): boolean;
 export function isEmpty(value: any): boolean;
@@ -38,4 +38,4 @@ export function removeMeta(target: Array<any> | { [ key: string | symbol ]: any 
 export function getMetaNS(namespace: string, target: Array<any> | { [ key: string | symbol ]: any } | null | undefined, path: string, defaultValue?: any): any;
 export function setMetaNS(namespace: string, target: Array<any> | { [ key: string | symbol ]: any } | null | undefined, path: string, value: any): string;
 export function removeMetaNS(namespace: string, target: Array<any> | { [ key: string | symbol ]: any } | null | undefined, path: string): any;
-export function iterate<T extends Iterable | Array | { [ key: string | symbol | number ]: any }, C>(value: T, callback: (context: IterateContext) => void, context?: C): C;
+export function iterate<T extends Iterable<any> | Array<any> | { [ key: string | symbol | number ]: any }, C>(value: T, callback: (context: IterateContext<T, C>) => void, context?: C): C;

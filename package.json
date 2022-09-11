@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/th317erd/nife#readme",
   "devDependencies": {
+    "@types/node": "^18.7.16",
     "jasmine": "^4.0.2"
   }
 }
