@@ -513,6 +513,11 @@ function createResolvable() {
   return promise;
 }
 
+// TODO: This method needs its design
+// reviewed. The "simple" argument is
+// out of place, and needs to be removed.
+// If the input pattern is a string, then
+// it should just behave properly.
 function splitBy(str, _patterns, simple) {
   var patterns = _patterns;
   if (!patterns)
