@@ -1,6 +1,6 @@
 {
   "name": "nife",
-  "version": "1.12.0",
+  "version": "1.12.1",
   "description": "Misc javascript utilities",
   "main": "src/index",
   "scripts": {
